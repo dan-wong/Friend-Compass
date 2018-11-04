@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.heading;
+package com.daniel.friendcompass.azimuth;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -11,21 +11,21 @@ import java.util.List;
 
 import static android.content.Context.SENSOR_SERVICE;
 
-public class HeadingSensor implements SensorEventListener {
-    private List<HeadingListener> listeners;
+public class AzimuthSensor implements SensorEventListener {
+    private List<AzimuthListener> listeners;
 
     private float[] gData;
     private float[] mData;
 
-    public HeadingSensor(Context context) {
+    public AzimuthSensor(Context context) {
         listeners = new LinkedList<>();
 
         SensorManager sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
-        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Sensor gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         Sensor magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         sensorManager.registerListener(this,
-                accelerometer,
+                gravitySensor,
                 SensorManager.SENSOR_DELAY_GAME);
 
         sensorManager.registerListener(this,
@@ -33,20 +33,20 @@ public class HeadingSensor implements SensorEventListener {
                 SensorManager.SENSOR_DELAY_GAME);
     }
 
-    public void registerListener(HeadingListener listener) {
+    public void registerListener(AzimuthListener listener) {
         listeners.add(listener);
     }
 
-    private void updateListeners(int azimuth) {
-        for (HeadingListener listener : listeners) {
-            listener.headingReceived(azimuth);
+    private void updateListeners(double azimuth) {
+        for (AzimuthListener listener : listeners) {
+            listener.bearingReceived(azimuth);
         }
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         switch(sensorEvent.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
+            case Sensor.TYPE_GRAVITY:
                 gData = sensorEvent.values.clone();
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
@@ -64,8 +64,8 @@ public class HeadingSensor implements SensorEventListener {
             if (success) {
                 float orientation[] = new float[3];
                 SensorManager.getOrientation(rMat, orientation);
-                int azimuth = (int) Math.round(Math.toDegrees(orientation[0]));
 
+                double azimuth = Math.toDegrees(orientation[0]);
                 updateListeners(azimuth);
             }
         }

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FriendCompass</string>
     <string name="azimuth_placeholder">Azimuth: %1$d</string>
-    <string name="bearing_placeholder">Bearing To: %1$f</string>
+    <string name="bearing_placeholder">Bearing To: %1$d</string>
     <string name="location_placeholder">Location: %1$f, %2$f</string>
     <string name="distance_placeholder">Distance: %1$f</string>
 </resources>

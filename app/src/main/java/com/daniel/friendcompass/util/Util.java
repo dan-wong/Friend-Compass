@@ -1,9 +1,10 @@
 package com.daniel.friendcompass.util;
 
+import android.hardware.GeomagneticField;
 import android.location.Location;
 
 public class Util {
-    public static float getRelativeBearing(Location src, Location dest, float azimuth) {
+    public static double getRelativeBearing(Location src, Location dest, double azimuth) {
         return (src.bearingTo(dest) - azimuth + 360) % 360;
     }
 
@@ -21,5 +22,20 @@ public class Util {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return radius * c;
+    }
+
+    public static double normalise(double bearing) {
+        return (bearing + 360) % 360;
+    }
+
+    public static double getAzimuthPlusDeclination(double azimuth, Location location) {
+        GeomagneticField geomagneticField = new GeomagneticField(
+                Double.valueOf(location.getLatitude()).floatValue(),
+                Double.valueOf(location.getLongitude()).floatValue(),
+                Double.valueOf(location.getAltitude()).floatValue(),
+                System.currentTimeMillis()
+        );
+
+        return azimuth + (geomagneticField.getDeclination() * -1);
     }
 }

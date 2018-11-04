@@ -11,13 +11,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.daniel.friendcompass.heading.HeadingListener;
-import com.daniel.friendcompass.heading.HeadingSensor;
+import com.daniel.friendcompass.azimuth.AzimuthListener;
+import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationListener;
 import com.daniel.friendcompass.location.LocationService;
-import com.daniel.friendcompass.userstore.UserStore;
 import com.daniel.friendcompass.userstore.UserStoreCallback;
 import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.Util;
@@ -34,7 +32,7 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity implements HeadingListener, LocationListener, UserStoreCallback {
+public class MainActivity extends AppCompatActivity implements AzimuthListener, LocationListener, UserStoreCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @BindView(R.id.azimuthTextView) TextView azimuthTextView;
@@ -65,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements HeadingListener, 
 
         MainActivityPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
 
-        HeadingSensor headingSensor = new HeadingSensor(this);
-        headingSensor.registerListener(this);
+        AzimuthSensor azimuthSensor = new AzimuthSensor(this);
+        azimuthSensor.registerListener(this);
     }
 
     @Override
@@ -82,16 +80,25 @@ public class MainActivity extends AppCompatActivity implements HeadingListener, 
     }
 
     @Override
-    public void headingReceived(int azimuth) {
-        azimuthTextView.setText(getString(R.string.azimuth_placeholder, azimuth));
+    public void bearingReceived(double azimuth) {
+        azimuth = Util.normalise(azimuth);
+        Log.i(TAG, azimuth + "");
 
-        if (location == null) return;
-        float bearing = Util.getRelativeBearing(location, targetLocation, azimuth);
+        if (location == null) {
+            setAzimuthTextView(azimuth);
+            return;
+        }
 
-        double avgBearing = rollingAverage.getAverageBearing(bearing);
+        azimuth = Util.getAzimuthPlusDeclination(azimuth, this.location);
+        setAzimuthTextView(azimuth);
 
-        bearingToTextView.setText(getString(R.string.bearing_placeholder, avgBearing));
-        compassImageView.setRotation((int) avgBearing);
+        double relativeBearing = Util.getRelativeBearing(this.location, this.targetLocation, azimuth);
+        relativeBearing = Util.normalise(rollingAverage.getAverageBearing(relativeBearing));
+
+        int roundedBearing = (int) Math.round(relativeBearing);
+
+        bearingToTextView.setText(getString(R.string.bearing_placeholder, roundedBearing));
+        compassImageView.setRotation(roundedBearing);
     }
 
     @Override
@@ -124,6 +131,11 @@ public class MainActivity extends AppCompatActivity implements HeadingListener, 
         targetLocationTextView.setText("Target " + getString(R.string.location_placeholder, targetLocation.getLatitude(), targetLocation.getLongitude()));
 
 //        Toast.makeText(this, "Location Updated!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setAzimuthTextView(double azimuth) {
+        int roundedAzimuth = (int) Math.round(azimuth);
+        azimuthTextView.setText(getString(R.string.azimuth_placeholder, roundedAzimuth));
     }
 
     /**
