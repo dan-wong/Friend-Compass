@@ -1,23 +1,24 @@
-package com.daniel.friendcompass;
+package com.daniel.friendcompass.activities.MainActivity;
 
 import android.Manifest;
 import android.content.DialogInterface;
-import android.graphics.BitmapFactory;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.daniel.friendcompass.R;
+import com.daniel.friendcompass.activities.UserActivity.UserActivity;
 import com.daniel.friendcompass.azimuth.AzimuthListener;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationListener;
 import com.daniel.friendcompass.location.LocationService;
-import com.daniel.friendcompass.userstore.UserStore;
 import com.daniel.friendcompass.userstore.UserStoreCallback;
 import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.Util;
@@ -66,6 +67,14 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
 
         AzimuthSensor azimuthSensor = new AzimuthSensor(this);
         azimuthSensor.registerListener(this);
+
+        findViewById(R.id.detailsLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), UserActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
