@@ -4,8 +4,8 @@ import android.hardware.GeomagneticField;
 import android.location.Location;
 
 public class Util {
-    public static double getRelativeBearing(Location src, Location dest, double azimuth) {
-        return (src.bearingTo(dest) - azimuth + 360) % 360;
+    public static double getRelativeBearing(Location src, Location dest, double bearing) {
+        return (getBearingWithDeclination(src.bearingTo(dest), src) - bearing + 360) % 360;
     }
 
     public static double distanceBetweenTwoCoordinates(Location src, Location dest) {
@@ -28,7 +28,7 @@ public class Util {
         return (bearing + 360) % 360;
     }
 
-    public static double getAzimuthPlusDeclination(double azimuth, Location location) {
+    public static double getBearingWithDeclination(double bearing, Location location) {
         GeomagneticField geomagneticField = new GeomagneticField(
                 Double.valueOf(location.getLatitude()).floatValue(),
                 Double.valueOf(location.getLongitude()).floatValue(),
@@ -36,6 +36,6 @@ public class Util {
                 System.currentTimeMillis()
         );
 
-        return azimuth + (geomagneticField.getDeclination() * -1);
+        return bearing + (geomagneticField.getDeclination() * -1);
     }
 }

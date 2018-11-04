@@ -2,6 +2,7 @@ package com.daniel.friendcompass;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
@@ -16,6 +17,7 @@ import com.daniel.friendcompass.azimuth.AzimuthListener;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationListener;
 import com.daniel.friendcompass.location.LocationService;
+import com.daniel.friendcompass.userstore.UserStore;
 import com.daniel.friendcompass.userstore.UserStoreCallback;
 import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.Util;
@@ -40,12 +42,11 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
     @BindView(R.id.targetLocationTextView) TextView targetLocationTextView;
     @BindView(R.id.bearingToTextView) TextView bearingToTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
-
     @BindView(R.id.compassImageView) ImageView compassImageView;
 
     private LocationService locationService;
-    private Location targetLocation;
     private Location location;
+    private Location targetLocation;
 
     private BearingRollingAverage rollingAverage = new BearingRollingAverage();
 
@@ -56,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
         ButterKnife.bind(this);
 
         targetLocation = new Location(LocationManager.GPS_PROVIDER);
-        targetLocation.setLatitude(-36.950370);
-        targetLocation.setLongitude(174.623885);
+        targetLocation.setLatitude(-36.950141);
+        targetLocation.setLongitude(174.623906);
 
         targetLocationTextView.setText("Target " + getString(R.string.location_placeholder, targetLocation.getLatitude(), targetLocation.getLongitude()));
 
@@ -82,14 +83,13 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
     @Override
     public void bearingReceived(double azimuth) {
         azimuth = Util.normalise(azimuth);
-        Log.i(TAG, azimuth + "");
 
         if (location == null) {
             setAzimuthTextView(azimuth);
             return;
         }
 
-        azimuth = Util.getAzimuthPlusDeclination(azimuth, this.location);
+        azimuth = Util.getBearingWithDeclination(azimuth, this.location);
         setAzimuthTextView(azimuth);
 
         double relativeBearing = Util.getRelativeBearing(this.location, this.targetLocation, azimuth);
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
 //        if (this.location != null &&
 //                this.location.getLatitude() != location.getLatitude() &&
 //                this.location.getLongitude() != location.getLongitude()) {
-////            UserStore.getInstance().updateUserLocation("neU8OvMGuJYMCZIjArQM", location);
+//            UserStore.getInstance().updateUserLocation("neU8OvMGuJYMCZIjArQM", location);
 //            UserStore.getInstance().getUser("neU8OvMGuJYMCZIjArQM", this);
 //
 //        }
