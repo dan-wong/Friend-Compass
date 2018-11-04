@@ -1,4 +1,4 @@
-package com.daniel.friendcompass;
+package com.daniel.friendcompass.util;
 
 import android.location.Location;
 

@@ -11,11 +11,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.daniel.friendcompass.heading.HeadingListener;
 import com.daniel.friendcompass.heading.HeadingSensor;
 import com.daniel.friendcompass.location.LocationListener;
 import com.daniel.friendcompass.location.LocationService;
+import com.daniel.friendcompass.userstore.UserStore;
+import com.daniel.friendcompass.userstore.UserStoreCallback;
+import com.daniel.friendcompass.util.BearingRollingAverage;
+import com.daniel.friendcompass.util.Util;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,7 +34,9 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity implements HeadingListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements HeadingListener, LocationListener, UserStoreCallback {
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     @BindView(R.id.azimuthTextView) TextView azimuthTextView;
     @BindView(R.id.locationTextView) TextView locationTextView;
     @BindView(R.id.targetLocationTextView) TextView targetLocationTextView;
@@ -61,13 +72,13 @@ public class MainActivity extends AppCompatActivity implements HeadingListener, 
     @Override
     protected void onPause() {
         super.onPause();
-        locationService.stopLocationUpdates();
+        if (locationService != null) locationService.stopLocationUpdates();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        locationService.startLocationUpdates();
+        if (locationService != null) locationService.startLocationUpdates();
     }
 
     @Override
@@ -85,9 +96,34 @@ public class MainActivity extends AppCompatActivity implements HeadingListener, 
 
     @Override
     public void locationReceived(Location location) {
+//        if (this.location != null &&
+//                this.location.getLatitude() != location.getLatitude() &&
+//                this.location.getLongitude() != location.getLongitude()) {
+////            UserStore.getInstance().updateUserLocation("neU8OvMGuJYMCZIjArQM", location);
+//            UserStore.getInstance().getUser("neU8OvMGuJYMCZIjArQM", this);
+//
+//        }
+//        UserStore.getInstance().getUser("neU8OvMGuJYMCZIjArQM", this);
+
         this.location = location;
+
         locationTextView.setText(getString(R.string.location_placeholder, location.getLatitude(), location.getLongitude()));
         distanceTextView.setText(getString(R.string.distance_placeholder, Util.distanceBetweenTwoCoordinates(location, targetLocation)));
+    }
+
+    @Override
+    public void userDataReceived(Map<String, Object> data) {
+        String locationString = String.valueOf(data.get("location"));
+        List<String> locationStringTokens = Arrays.asList(locationString.split(","));
+
+        Location location = new Location("");
+        location.setLatitude(Double.valueOf(locationStringTokens.get(0)));
+        location.setLongitude(Double.valueOf(locationStringTokens.get(1)));
+
+        targetLocation = location;
+        targetLocationTextView.setText("Target " + getString(R.string.location_placeholder, targetLocation.getLatitude(), targetLocation.getLongitude()));
+
+//        Toast.makeText(this, "Location Updated!", Toast.LENGTH_SHORT).show();
     }
 
     /**

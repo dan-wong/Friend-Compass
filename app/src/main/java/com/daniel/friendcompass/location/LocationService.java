@@ -16,7 +16,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 public class LocationService {
     private static final int DEFAULT_REQUEST_INTERVAL = 5000;
-    private static final int FASTEST_REQUEST_INTERVAL = 1000;
 
     private final FusedLocationProviderClient fusedLocationProviderClient;
     private final LocationCallback locationCallback;
@@ -60,7 +59,6 @@ public class LocationService {
     private LocationRequest createLocationRequest() {
         return new LocationRequest()
                 .setInterval(DEFAULT_REQUEST_INTERVAL)
-                .setFastestInterval(FASTEST_REQUEST_INTERVAL)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 

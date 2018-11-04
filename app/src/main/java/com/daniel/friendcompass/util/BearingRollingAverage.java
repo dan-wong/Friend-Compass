@@ -1,9 +1,9 @@
-package com.daniel.friendcompass;
+package com.daniel.friendcompass.util;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class BearingRollingAverage {
-    private static final int CAPACITY = 15;
+    private static final int CAPACITY = 6;
 
     private LinkedBlockingQueue<Double> queue = new LinkedBlockingQueue<>(CAPACITY);
 
