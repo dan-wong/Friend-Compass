@@ -1,23 +1,24 @@
 package com.daniel.friendcompass.activities.MainActivity;
 
 import android.Manifest;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.UserActivity.UserActivity;
-import com.daniel.friendcompass.azimuth.AzimuthListener;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
-import com.daniel.friendcompass.location.LocationListener;
 import com.daniel.friendcompass.location.LocationService;
 import com.daniel.friendcompass.userstore.UserStoreCallback;
 import com.daniel.friendcompass.util.BearingRollingAverage;
@@ -35,7 +36,7 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity implements AzimuthListener, LocationListener, UserStoreCallback {
+public class MainActivity extends AppCompatActivity implements UserStoreCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @BindView(R.id.azimuthTextView) TextView azimuthTextView;
@@ -51,11 +52,14 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
 
     private BearingRollingAverage rollingAverage = new BearingRollingAverage();
 
+    private MainViewModel viewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        this.viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         targetLocation = new Location(LocationManager.GPS_PROVIDER);
         targetLocation.setLatitude(-36.950141);
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
         MainActivityPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
 
         AzimuthSensor azimuthSensor = new AzimuthSensor(this);
-        azimuthSensor.registerListener(this);
+        azimuthSensor.registerListener(this.viewModel);
 
         findViewById(R.id.detailsLayout).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +79,37 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
                 startActivity(intent);
             }
         });
+
+        final Observer<Double> azimuthObserver = new Observer<Double>() {
+            @Override
+            public void onChanged(@Nullable Double azimuth) {
+                if (azimuth == null) return;
+                int roundedAzimuth = (int) Math.round(azimuth);
+                azimuthTextView.setText(getString(R.string.azimuth_placeholder, roundedAzimuth));
+
+                if (location == null) return;
+                double relativeBearing = Util.getRelativeBearing(location, targetLocation, azimuth);
+                relativeBearing = Util.normalise(rollingAverage.getAverageBearing(relativeBearing));
+
+                int roundedBearing = (int) Math.round(relativeBearing);
+
+                bearingToTextView.setText(getString(R.string.bearing_placeholder, roundedBearing));
+                compassImageView.setRotation(roundedBearing);
+            }
+        };
+
+        final Observer<Location> locationObserver = new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location newLocation) {
+                if (newLocation == null) return;
+                location = newLocation;
+                locationTextView.setText(getString(R.string.location_placeholder, location.getLatitude(), location.getLongitude()));
+                distanceTextView.setText(getString(R.string.distance_placeholder, Util.distanceBetweenTwoCoordinates(location, targetLocation)));
+            }
+        };
+
+        viewModel.getAzimuth().observe(this, azimuthObserver);
+        viewModel.getLocation().observe(this, locationObserver);
     }
 
     @Override
@@ -87,44 +122,6 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
     protected void onResume() {
         super.onResume();
         if (locationService != null) locationService.startLocationUpdates();
-    }
-
-    @Override
-    public void bearingReceived(double azimuth) {
-        azimuth = Util.normalise(azimuth);
-
-        if (location == null) {
-            setAzimuthTextView(azimuth);
-            return;
-        }
-
-        azimuth = Util.getBearingWithDeclination(azimuth, this.location);
-        setAzimuthTextView(azimuth);
-
-        double relativeBearing = Util.getRelativeBearing(this.location, this.targetLocation, azimuth);
-        relativeBearing = Util.normalise(rollingAverage.getAverageBearing(relativeBearing));
-
-        int roundedBearing = (int) Math.round(relativeBearing);
-
-        bearingToTextView.setText(getString(R.string.bearing_placeholder, roundedBearing));
-        compassImageView.setRotation(roundedBearing);
-    }
-
-    @Override
-    public void locationReceived(Location location) {
-//        if (this.location != null &&
-//                this.location.getLatitude() != location.getLatitude() &&
-//                this.location.getLongitude() != location.getLongitude()) {
-//            UserStore.getInstance().updateUserLocation("neU8OvMGuJYMCZIjArQM", location);
-//            UserStore.getInstance().getUser("neU8OvMGuJYMCZIjArQM", this);
-//
-//        }
-//        UserStore.getInstance().getUser("neU8OvMGuJYMCZIjArQM", this);
-
-        this.location = location;
-
-        locationTextView.setText(getString(R.string.location_placeholder, location.getLatitude(), location.getLongitude()));
-        distanceTextView.setText(getString(R.string.distance_placeholder, Util.distanceBetweenTwoCoordinates(location, targetLocation)));
     }
 
     @Override
@@ -142,18 +139,13 @@ public class MainActivity extends AppCompatActivity implements AzimuthListener, 
 //        Toast.makeText(this, "Location Updated!", Toast.LENGTH_SHORT).show();
     }
 
-    private void setAzimuthTextView(double azimuth) {
-        int roundedAzimuth = (int) Math.round(azimuth);
-        azimuthTextView.setText(getString(R.string.azimuth_placeholder, roundedAzimuth));
-    }
-
     /**
      * Permission things below
      */
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void startLocationUpdates() {
-        locationService = new LocationService(this, this);
+        locationService = new LocationService(this, this.viewModel);
     }
 
     @OnPermissionDenied(Manifest.permission.ACCESS_FINE_LOCATION)

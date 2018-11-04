@@ -5,7 +5,7 @@ import android.location.Location;
 
 public class Util {
     public static double getRelativeBearing(Location src, Location dest, double bearing) {
-        return (getBearingWithDeclination(src.bearingTo(dest), src) - bearing + 360) % 360;
+        return normalise(getBearingWithDeclination(src.bearingTo(dest), src) - bearing);
     }
 
     public static double distanceBetweenTwoCoordinates(Location src, Location dest) {
