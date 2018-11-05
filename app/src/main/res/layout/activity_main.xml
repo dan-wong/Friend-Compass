@@ -36,16 +36,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
 
-        <TextView
-            android:id="@+id/lastUpdatedTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Last Updated Moments Ago"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameTextView" />
-
         <ImageView
             android:id="@+id/accuracyImageView"
             android:layout_width="32dp"
@@ -71,9 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="250dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
         android:padding="20dp"
         app:layout_constraintBottom_toTopOf="@+id/nameLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -142,10 +130,21 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/lastUpdatedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Updated Moments Ago"
+            android:textColor="@color/secondary_text"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nameTextView" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="15dp"
             android:orientation="horizontal">
 
             <Button
