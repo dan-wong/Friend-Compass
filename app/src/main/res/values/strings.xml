@@ -3,7 +3,8 @@
     <string name="azimuth_placeholder">Azimuth: %1$d</string>
     <string name="bearing_placeholder">Bearing To: %1$d</string>
     <string name="location_placeholder">%1$s</string>
-    <string name="distance_placeholder">Distance: %1$dm</string>
+    <string name="distance_placeholder_m">Distance: %1$dm</string>
+    <string name="distance_placeholder_km">Distance: %1$skm</string>
     <string name="default_name">John Doe</string>
     <string name="accuracy">Accuracy</string>
     <string name="friends">Friends</string>

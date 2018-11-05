@@ -34,6 +34,7 @@ import com.daniel.friendcompass.util.BearingUtil;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -118,8 +119,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Location newLocation) {
                 if (newLocation == null) return;
-                distanceTextView.setText(getString(R.string.distance_placeholder,
-                        Math.round(BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation))));
+                setDistanceTextView(BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation));
                 location = newLocation;
             }
         };
@@ -165,8 +165,17 @@ public class MainActivity extends AppCompatActivity {
         getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
 
         if (location != null) {
-            distanceTextView.setText(getString(R.string.distance_placeholder,
-                    Math.round(BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation))));
+            setDistanceTextView(BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation));
+        }
+    }
+
+    private void setDistanceTextView(double distance) {
+        if (distance >= 1000) {
+            final DecimalFormat formatter = new DecimalFormat("#,###,###");
+            distanceTextView.setText(getString(R.string.distance_placeholder_km,
+                    formatter.format(Math.round(distance / 1000))));
+        } else {
+            distanceTextView.setText(getString(R.string.distance_placeholder_m, Math.round(distance)));
         }
     }
 
