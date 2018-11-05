@@ -12,8 +12,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
@@ -22,6 +23,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 public class UserRepository {
     private static final String TAG = UserRepository.class.getSimpleName();
@@ -46,29 +49,23 @@ public class UserRepository {
     }
 
     public void initialiseRequiredData() {
-        if (users == null) getUsers();
-    }
+        if (users != null) return;
 
-    public User getSelectedUser() {
-        return selectedUser;
-    }
-
-    public void setSelectedUser(User user) {
-        this.selectedUser = user;
-    }
-
-    public MutableLiveData<List<User>> getUsers() {
+        getUsers();
         db.collection("users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (!task.isSuccessful())
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if (e != null || queryDocumentSnapshots == null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
 
                         List<User> newUsers = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
+                        for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                             Map<String, Object> data = document.getData();
+
+                            if (data == null) continue;
 
                             User user;
                             if (data.containsKey("latitude")) {
@@ -89,7 +86,17 @@ public class UserRepository {
                         users.setValue(newUsers);
                     }
                 });
+    }
 
+    public User getSelectedUser() {
+        return selectedUser;
+    }
+
+    public void setSelectedUser(User user) {
+        this.selectedUser = user;
+    }
+
+    public MutableLiveData<List<User>> getUsers() {
         if (users == null) users = new MutableLiveData<>();
         return users;
     }

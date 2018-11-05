@@ -47,19 +47,14 @@ import permissions.dispatcher.RuntimePermissions;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    @BindView(R.id.nameTextView)
-    TextView nameTextView;
-    @BindView(R.id.lastUpdatedTextView)
-    TextView lastUpdatedTextView;
+    @BindView(R.id.nameTextView) TextView nameTextView;
+    @BindView(R.id.lastUpdatedTextView) TextView lastUpdatedTextView;
     @BindView(R.id.locationTextView) TextView locationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
-    @BindView(R.id.accuracyImageView)
-    ImageView accuracyImageView;
-    @BindView(R.id.friendsBtn)
-    Button friendsBtn;
-    @BindView(R.id.mapBtn)
-    Button mapbtn;
+    @BindView(R.id.accuracyImageView) ImageView accuracyImageView;
+    @BindView(R.id.friendsBtn) Button friendsBtn;
+    @BindView(R.id.mapBtn) Button mapbtn;
 
     private LocationService locationService;
     private Location location;
@@ -168,6 +163,11 @@ public class MainActivity extends AppCompatActivity {
         targetLocation.setLongitude(user.getLongitude());
 
         getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
+
+        if (location != null) {
+            distanceTextView.setText(getString(R.string.distance_placeholder,
+                    Math.round(BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation))));
+        }
     }
 
     @Override
@@ -182,10 +182,6 @@ public class MainActivity extends AppCompatActivity {
         if (locationService != null) locationService.startLocationUpdates();
         setUserDetails(UserRepository.getInstance().getSelectedUser());
     }
-
-    /**
-     * Permission things
-     */
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void startLocationUpdates() {
@@ -212,6 +208,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * Permission things
+     */
 
     @OnPermissionDenied(Manifest.permission.ACCESS_FINE_LOCATION)
     void showDeniedForLocation() {
