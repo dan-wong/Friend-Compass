@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.util;
+package com.daniel.friendcompass.activities.UserActivity;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;

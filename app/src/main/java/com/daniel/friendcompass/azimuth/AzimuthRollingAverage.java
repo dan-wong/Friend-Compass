@@ -1,13 +1,13 @@
-package com.daniel.friendcompass.util;
+package com.daniel.friendcompass.azimuth;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class BearingRollingAverage {
+public class AzimuthRollingAverage {
     private static final int CAPACITY = 10;
 
     private LinkedBlockingQueue<Double> queue = new LinkedBlockingQueue<>(CAPACITY);
 
-    public BearingRollingAverage() {}
+    public AzimuthRollingAverage() {}
 
     public double getAverageBearing(double bearing) {
         if (queue.size() == CAPACITY) queue.poll();

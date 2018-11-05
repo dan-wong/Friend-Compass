@@ -1,6 +1,5 @@
 package com.daniel.friendcompass.activities.UserActivity.adapter;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,12 +17,10 @@ import java.util.Date;
 import java.util.List;
 
 public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerViewAdapter.UserViewHolder> {
-    private Context context;
     private List<User> usersList;
     private UserActivityListener listener;
 
-    public UserRecyclerViewAdapter(Context context, List<User> usersList, UserActivityListener listener) {
-        this.context = context;
+    public UserRecyclerViewAdapter(List<User> usersList, UserActivityListener listener) {
         this.usersList = usersList;
         this.listener = listener;
     }
@@ -40,8 +37,13 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         final User user = usersList.get(position);
         holder.nameTextView.setText(user.getName());
-        holder.lastUpdatedTextView.setText(context.getString(R.string.last_updated_placeholder,
-                new PrettyTime().format(new Date(user.getTimestamp()))));
+
+        if (user.getTimestamp() == 0) {
+            holder.lastUpdatedTextView.setText(R.string.no_location_found);
+        } else {
+            holder.lastUpdatedTextView.setText(String.format("Last updated %s", new PrettyTime().format(new Date(user.getTimestamp()))));
+        }
+
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

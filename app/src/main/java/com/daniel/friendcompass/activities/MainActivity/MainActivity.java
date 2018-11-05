@@ -17,25 +17,28 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.daniel.friendcompass.Constants;
+import com.daniel.friendcompass.FetchAddressIntentService;
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.UserActivity.UserActivity;
+import com.daniel.friendcompass.azimuth.AzimuthRollingAverage;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationService;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
-import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.BearingUtil;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nameTextView) TextView nameTextView;
     @BindView(R.id.lastUpdatedTextView) TextView lastUpdatedTextView;
     @BindView(R.id.locationTextView) TextView locationTextView;
+    @BindView(R.id.subLocationTextView) TextView subLocationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
     @BindView(R.id.accuracyImageView) ImageView accuracyImageView;
@@ -61,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
     private Location location;
     private Location targetLocation;
 
-    private BearingRollingAverage rollingAverage = new BearingRollingAverage();
+    private AzimuthRollingAverage rollingAverage = new AzimuthRollingAverage();
+    private User currentUser;
 
     private MainViewModel viewModel;
 
@@ -75,10 +80,8 @@ public class MainActivity extends AppCompatActivity {
         UserRepository.getInstance().initialiseRequiredData();
         MainActivityPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
 
-        AzimuthSensor azimuthSensor = new AzimuthSensor(this);
-        azimuthSensor.registerListener(this.viewModel);
-
-        setUserDetails(UserRepository.getInstance().getSelectedUser());
+        //Setup Azimuth Sensor
+        new AzimuthSensor(this, viewModel);
 
         friendsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,14 +95,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (targetLocation == null) return;
-                Uri gmmIntentUri = Uri.parse(getString(R.string.maps_uri, targetLocation.getLatitude(), targetLocation.getLongitude(),
-                        UserRepository.getInstance().getSelectedUser().getName()));
+                Uri gmmIntentUri = Uri.parse(getString(R.string.maps_uri,
+                        targetLocation.getLatitude(),
+                        targetLocation.getLongitude(),
+                        currentUser.getName()));
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
 
-                if (mapIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(mapIntent);
-                }
+                if (mapIntent.resolveActivity(getPackageManager()) != null) startActivity(mapIntent);
             }
         });
 
@@ -119,8 +122,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Location newLocation) {
                 if (newLocation == null) return;
-                setDistanceTextView(BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation));
                 location = newLocation;
+                distanceTextView.setText(BearingUtil.formatDistance(
+                        BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation)
+                ));
             }
         };
 
@@ -142,9 +147,29 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(@Nullable User user) {
+                if (user == null) return;
+                currentUser = user;
+
+                nameTextView.setText(user.getName());
+                lastUpdatedTextView.setText(getString(R.string.last_updated_placeholder, new PrettyTime().format(new Date(user.getTimestamp()))));
+                targetLocation = createLocation(user.getLatitude(), user.getLongitude());
+
+                getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
+                if (location != null) {
+                    distanceTextView.setText(BearingUtil.formatDistance(
+                            BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation)
+                    ));
+                }
+            }
+        };
+
         viewModel.getAzimuth().observe(this, azimuthObserver);
         viewModel.getLocation().observe(this, locationObserver);
         viewModel.getSensorAccuracy().observe(this, sensorAccuracyObserver);
+        UserRepository.getInstance().getSelectedUser().observe(this, userObserver);
     }
 
     private void getLocationAddress(Location location, ResultReceiver resultReceiver) {
@@ -154,29 +179,11 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
     }
 
-    private void setUserDetails(User user) {
-        nameTextView.setText(user.getName());
-        lastUpdatedTextView.setText(new PrettyTime().format(new Date(user.getTimestamp())));
-
-        targetLocation = new Location("");
-        targetLocation.setLatitude(user.getLatitude());
-        targetLocation.setLongitude(user.getLongitude());
-
-        getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
-
-        if (location != null) {
-            setDistanceTextView(BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation));
-        }
-    }
-
-    private void setDistanceTextView(double distance) {
-        if (distance >= 1000) {
-            final DecimalFormat formatter = new DecimalFormat("#,###,###");
-            distanceTextView.setText(getString(R.string.distance_placeholder_km,
-                    formatter.format(Math.round(distance / 1000))));
-        } else {
-            distanceTextView.setText(getString(R.string.distance_placeholder_m, Math.round(distance)));
-        }
+    private Location createLocation(double latitude, double longitude) {
+        Location location = new Location("");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        return location;
     }
 
     @Override
@@ -189,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (locationService != null) locationService.startLocationUpdates();
-        setUserDetails(UserRepository.getInstance().getSelectedUser());
     }
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -211,9 +217,16 @@ public class MainActivity extends AppCompatActivity {
             if (resultData == null) return;
             String address = resultData.getString(Constants.RESULT_DATA_KEY);
             if (resultCode == Constants.SUCCESS_RESULT && address != null) {
-                locationTextView.setText(getString(R.string.location_placeholder, address));
+                List<String> addressFragments = Arrays.asList(address.split(","));
+
+                List<String> firstTwo = addressFragments.subList(0, 1);
+                List<String> remaining = addressFragments.subList(2, addressFragments.size());
+
+                locationTextView.setText(TextUtils.join(", ", firstTwo).trim());
+                subLocationTextView.setText(TextUtils.join(", ", remaining).trim());
             } else {
                 locationTextView.setText(R.string.address_not_found);
+                subLocationTextView.setText(String.format("%s, %s", currentUser.getLatitude(), currentUser.getLongitude()));
             }
         }
     }

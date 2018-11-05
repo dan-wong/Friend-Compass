@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.activities.MainActivity;
+package com.daniel.friendcompass;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -10,8 +10,6 @@ import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.daniel.friendcompass.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,15 +55,12 @@ public class FetchAddressIntentService extends IntentService {
         } else {
             Address address = addresses.get(0);
             List<String> addressFragments = new ArrayList<>();
-
-            if (address.getThoroughfare() != null)
-                addressFragments.add(0, address.getFeatureName() + " " + address.getThoroughfare()); //Number and Road
-            if (address.getSubLocality() != null)
-                addressFragments.add(address.getSubLocality()); //Suburb
-            addressFragments.add(address.getLocality()); //City
-
+            for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                addressFragments.add(address.getAddressLine(i));
+            }
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
-                    TextUtils.join(", ", addressFragments));
+                    TextUtils.join(System.getProperty("line.separator"),
+                            addressFragments));
         }
     }
 

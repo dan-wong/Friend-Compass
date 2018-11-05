@@ -29,7 +29,7 @@
             tools:ignore="InnerclassSeparator" />
 
         <service
-            android:name=".activities.MainActivity.FetchAddressIntentService"
+            android:name=".FetchAddressIntentService"
             android:exported="false" />
     </application>
 

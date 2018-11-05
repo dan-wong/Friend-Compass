@@ -4,12 +4,12 @@ import android.support.annotation.NonNull;
 
 public class User implements Comparable<User> {
     private final String name;
-    private double latitude;
-    private double longitude;
-    private long timestamp;
+    private final double latitude;
+    private final double longitude;
+    private final long timestamp;
 
     public User(String name) {
-        this.name = name;
+        this(name, 0.0, 0.0, 0);
     }
 
     public User(String name, double latitude, double longitude, long timestamp) {

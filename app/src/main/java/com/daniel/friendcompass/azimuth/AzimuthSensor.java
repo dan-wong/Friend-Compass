@@ -6,20 +6,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import static android.content.Context.SENSOR_SERVICE;
 
 public class AzimuthSensor implements SensorEventListener {
-    private List<AzimuthListener> listeners;
+    private AzimuthListener listener;
 
     private float[] gData;
     private float[] mData;
 
-    public AzimuthSensor(Context context) {
-        listeners = new LinkedList<>();
-
+    public AzimuthSensor(Context context, AzimuthListener listener) {
         SensorManager sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         Sensor gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         Sensor magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -31,22 +26,8 @@ public class AzimuthSensor implements SensorEventListener {
         sensorManager.registerListener(this,
                 magneticSensor,
                 SensorManager.SENSOR_DELAY_GAME);
-    }
 
-    public void registerListener(AzimuthListener listener) {
-        listeners.add(listener);
-    }
-
-    private void updateListeners(double azimuth) {
-        for (AzimuthListener listener : listeners) {
-            listener.bearingReceived(azimuth);
-        }
-    }
-
-    private void updateListeners(int accuracy) {
-        for (AzimuthListener listener : listeners) {
-            listener.sensorAccuracyChanged(accuracy);
-        }
+        this.listener = listener;
     }
 
     @Override
@@ -72,13 +53,13 @@ public class AzimuthSensor implements SensorEventListener {
                 SensorManager.getOrientation(rMat, orientation);
 
                 double azimuth = Math.toDegrees(orientation[0]);
-                updateListeners(azimuth);
+                listener.bearingReceived(azimuth);
             }
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-        updateListeners(i);
+        listener.sensorAccuracyChanged(i);
     }
 }
