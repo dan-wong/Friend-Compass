@@ -5,6 +5,8 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
     @BindView(R.id.bearingToTextView) TextView bearingToTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
+    @BindView(R.id.accuracyImageView)
+    ImageView accuracyImageView;
 
     private LocationService locationService;
     private Location location;
@@ -72,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
         AzimuthSensor azimuthSensor = new AzimuthSensor(this);
         azimuthSensor.registerListener(this.viewModel);
 
-        findViewById(R.id.detailsLayout).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.nameLayout).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), UserActivity.class);
@@ -108,8 +112,27 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
             }
         };
 
+        final Observer<Integer> sensorAccuracyObserver = new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer accuracy) {
+                if (accuracy == null) return;
+                switch (accuracy) {
+                    case SensorManager.SENSOR_STATUS_ACCURACY_HIGH:
+                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_full));
+                        break;
+                    case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM:
+                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_medium));
+                        break;
+                    default:
+                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_low));
+                        break;
+                }
+            }
+        };
+
         viewModel.getAzimuth().observe(this, azimuthObserver);
         viewModel.getLocation().observe(this, locationObserver);
+        viewModel.getSensorAccuracy().observe(this, sensorAccuracyObserver);
     }
 
     @Override

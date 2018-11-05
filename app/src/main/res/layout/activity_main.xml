@@ -8,27 +8,31 @@
     android:background="@color/colorPrimary"
     tools:context=".activities.MainActivity.MainActivity">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical"
+        android:layout_marginEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
 
         <TextView
             android:id="@+id/nameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
-            android:text="Daniel Wong"
+            android:text="@string/default_name"
             android:textColor="@android:color/white"
             android:textSize="36sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/lastUpdatedTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
             android:id="@+id/lastUpdatedTextView"
@@ -36,26 +40,47 @@
             android:layout_height="wrap_content"
             android:text="Last Updated Moments Ago"
             android:textColor="@android:color/white"
-            android:textSize="12sp" />
-    </LinearLayout>
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nameTextView" />
+
+        <ImageView
+            android:id="@+id/accuracyImageView"
+            android:layout_width="32dp"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toTopOf="@+id/accuracyTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/accuracy_full" />
+
+        <TextView
+            android:id="@+id/accuracyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/accuracy"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
 
     <ImageView
         android:id="@+id/compassImageView"
         android:layout_width="wrap_content"
         android:layout_height="250dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:padding="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/detailsLayout"
+        app:layout_constraintBottom_toTopOf="@+id/nameLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerLayout"
         app:srcCompat="@drawable/compass" />
 
     <LinearLayout
-        android:id="@+id/detailsLayout"
+        android:id="@+id/nameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

@@ -43,6 +43,12 @@ public class AzimuthSensor implements SensorEventListener {
         }
     }
 
+    private void updateListeners(int accuracy) {
+        for (AzimuthListener listener : listeners) {
+            listener.sensorAccuracyChanged(accuracy);
+        }
+    }
+
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         switch(sensorEvent.sensor.getType()) {
@@ -72,5 +78,7 @@ public class AzimuthSensor implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) { }
+    public void onAccuracyChanged(Sensor sensor, int i) {
+        updateListeners(i);
+    }
 }
