@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.util;
+package com.daniel.friendcompass.activities.MainActivity;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -58,8 +58,10 @@ public class FetchAddressIntentService extends IntentService {
             Address address = addresses.get(0);
             List<String> addressFragments = new ArrayList<>();
 
-            addressFragments.add(address.getFeatureName() + " " + address.getThoroughfare()); //Number and Road
-            addressFragments.add(address.getSubLocality()); //Suburb
+            if (address.getThoroughfare() != null)
+                addressFragments.add(0, address.getFeatureName() + " " + address.getThoroughfare()); //Number and Road
+            if (address.getSubLocality() != null)
+                addressFragments.add(address.getSubLocality()); //Suburb
             addressFragments.add(address.getLocality()); //City
 
             deliverResultToReceiver(Constants.SUCCESS_RESULT,

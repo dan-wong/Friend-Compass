@@ -1,6 +1,8 @@
 package com.daniel.friendcompass.models;
 
-public class User {
+import android.support.annotation.NonNull;
+
+public class User implements Comparable<User> {
     private final String name;
     private double latitude;
     private double longitude;
@@ -31,5 +33,10 @@ public class User {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public int compareTo(@NonNull User user) {
+        return name.compareTo(user.name);
     }
 }

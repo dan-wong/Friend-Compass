@@ -1,5 +1,6 @@
 package com.daniel.friendcompass.activities.UserActivity.adapter;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -7,18 +8,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.models.User;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.util.Date;
 import java.util.List;
 
 public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerViewAdapter.UserViewHolder> {
-    private List<User> users;
+    private Context context;
+    private List<User> usersList;
+    private UserActivityListener listener;
 
-    public UserRecyclerViewAdapter(List<User> users) {
-        this.users = users;
+    public UserRecyclerViewAdapter(Context context, List<User> usersList, UserActivityListener listener) {
+        this.context = context;
+        this.usersList = usersList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,34 +38,37 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        final User user = users.get(position);
-        holder.nameTextview.setText(user.getName());
-        holder.lastUpdatedTextView.setText("Woohoo");
+        final User user = usersList.get(position);
+        holder.nameTextView.setText(user.getName());
+        holder.lastUpdatedTextView.setText(context.getString(R.string.last_updated_placeholder,
+                new PrettyTime().format(new Date(user.getTimestamp()))));
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), user.getName(), Toast.LENGTH_SHORT).show();
+                listener.userSelected(user);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return usersList == null ? 0 : usersList.size();
+    }
+
+    public interface UserActivityListener {
+        void userSelected(User user);
     }
 
     public class UserViewHolder extends RecyclerView.ViewHolder {
-        public TextView nameTextview;
+        public TextView nameTextView;
         public TextView lastUpdatedTextView;
         public CardView cardView;
 
         public UserViewHolder(View itemView) {
             super(itemView);
-            nameTextview = itemView.findViewById(R.id.nameTextView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
             lastUpdatedTextView = itemView.findViewById(R.id.lastUpdatedTextView);
             cardView = itemView.findViewById(R.id.cardView);
         }
     }
-
-
 }

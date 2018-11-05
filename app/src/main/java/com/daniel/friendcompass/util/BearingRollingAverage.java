@@ -3,7 +3,7 @@ package com.daniel.friendcompass.util;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class BearingRollingAverage {
-    private static final int CAPACITY = 8;
+    private static final int CAPACITY = 10;
 
     private LinkedBlockingQueue<Double> queue = new LinkedBlockingQueue<>(CAPACITY);
 

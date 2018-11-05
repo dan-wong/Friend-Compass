@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,14 +27,14 @@ import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.UserActivity.UserActivity;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationService;
-import com.daniel.friendcompass.userstore.UserStoreCallback;
+import com.daniel.friendcompass.models.User;
+import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.BearingRollingAverage;
-import com.daniel.friendcompass.util.FetchAddressIntentService;
-import com.daniel.friendcompass.util.Util;
+import com.daniel.friendcompass.util.BearingUtil;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import org.ocpsoft.prettytime.PrettyTime;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,9 +44,13 @@ import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions
-public class MainActivity extends AppCompatActivity implements UserStoreCallback {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    @BindView(R.id.nameTextView)
+    TextView nameTextView;
+    @BindView(R.id.lastUpdatedTextView)
+    TextView lastUpdatedTextView;
     @BindView(R.id.locationTextView) TextView locationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
@@ -73,14 +76,13 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
         ButterKnife.bind(this);
         this.viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
-        targetLocation = new Location(LocationManager.GPS_PROVIDER);
-        targetLocation.setLatitude(-36.950141);
-        targetLocation.setLongitude(174.623906);
-
+        UserRepository.getInstance().initialiseRequiredData();
         MainActivityPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
 
         AzimuthSensor azimuthSensor = new AzimuthSensor(this);
         azimuthSensor.registerListener(this.viewModel);
+
+        setUserDetails(UserRepository.getInstance().getSelectedUser());
 
         friendsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,8 +95,9 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
         mapbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (location == null) return;
-                Uri gmmIntentUri = Uri.parse(getString(R.string.maps_uri, location.getLatitude(), location.getLongitude(), "Daniel Wong"));
+                if (targetLocation == null) return;
+                Uri gmmIntentUri = Uri.parse(getString(R.string.maps_uri, targetLocation.getLatitude(), targetLocation.getLongitude(),
+                        UserRepository.getInstance().getSelectedUser().getName()));
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
 
@@ -108,8 +111,8 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
             @Override
             public void onChanged(@Nullable Double azimuth) {
                 if (azimuth == null || location == null) return;
-                double relativeBearing = Util.getRelativeBearing(location, targetLocation, azimuth);
-                relativeBearing = Util.normalise(rollingAverage.getAverageBearing(relativeBearing));
+                double relativeBearing = BearingUtil.getRelativeBearing(location, targetLocation, azimuth);
+                relativeBearing = BearingUtil.normalise(rollingAverage.getAverageBearing(relativeBearing));
 
                 int roundedBearing = (int) Math.round(relativeBearing);
                 compassImageView.setRotation(roundedBearing);
@@ -120,12 +123,9 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
             @Override
             public void onChanged(@Nullable Location newLocation) {
                 if (newLocation == null) return;
-                location = newLocation;
-//                locationTextView.setText(getString(R.string.location_placeholder, location.getLatitude(), location.getLongitude()));
                 distanceTextView.setText(getString(R.string.distance_placeholder,
-                        Math.round(Util.distanceBetweenTwoCoordinates(location, targetLocation))));
-
-                getLocationAddress(location, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
+                        Math.round(BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation))));
+                location = newLocation;
             }
         };
 
@@ -159,6 +159,17 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
         startService(intent);
     }
 
+    private void setUserDetails(User user) {
+        nameTextView.setText(user.getName());
+        lastUpdatedTextView.setText(new PrettyTime().format(new Date(user.getTimestamp())));
+
+        targetLocation = new Location("");
+        targetLocation.setLatitude(user.getLatitude());
+        targetLocation.setLongitude(user.getLongitude());
+
+        getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -169,29 +180,37 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
     protected void onResume() {
         super.onResume();
         if (locationService != null) locationService.startLocationUpdates();
-    }
-
-    @Override
-    public void userDataReceived(Map<String, Object> data) {
-        String locationString = String.valueOf(data.get("location"));
-        List<String> locationStringTokens = Arrays.asList(locationString.split(","));
-
-        Location location = new Location("");
-        location.setLatitude(Double.valueOf(locationStringTokens.get(0)));
-        location.setLongitude(Double.valueOf(locationStringTokens.get(1)));
-
-        targetLocation = location;
-
-//        Toast.makeText(this, "Location Updated!", Toast.LENGTH_SHORT).show();
+        setUserDetails(UserRepository.getInstance().getSelectedUser());
     }
 
     /**
-     * Permission things below
+     * Permission things
      */
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void startLocationUpdates() {
         locationService = new LocationService(this, this.viewModel);
+    }
+
+    /**
+     * Inner classes
+     */
+
+    class AddressResultReceiver extends ResultReceiver {
+        AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            if (resultData == null) return;
+            String address = resultData.getString(Constants.RESULT_DATA_KEY);
+            if (resultCode == Constants.SUCCESS_RESULT && address != null) {
+                locationTextView.setText(getString(R.string.location_placeholder, address));
+            } else {
+                locationTextView.setText(R.string.address_not_found);
+            }
+        }
     }
 
     @OnPermissionDenied(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -219,20 +238,5 @@ public class MainActivity extends AppCompatActivity implements UserStoreCallback
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         MainActivityPermissionsDispatcher
                 .onRequestPermissionsResult(this, requestCode, grantResults);
-    }
-
-    class AddressResultReceiver extends ResultReceiver {
-        AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            if (resultData == null) return;
-            String address = resultData.getString(Constants.RESULT_DATA_KEY);
-            if (resultCode == Constants.SUCCESS_RESULT && address != null) {
-                locationTextView.setText(getString(R.string.location_placeholder, address));
-            }
-        }
     }
 }

@@ -1,13 +1,16 @@
 <resources>
-    <string name="app_name">FriendCompass</string>
+    <string name="app_name">Friend Compass</string>
     <string name="azimuth_placeholder">Azimuth: %1$d</string>
     <string name="bearing_placeholder">Bearing To: %1$d</string>
     <string name="location_placeholder">%1$s</string>
     <string name="distance_placeholder">Distance: %1$dm</string>
-    <string name="default_name">Daniel Wong</string>
+    <string name="default_name">John Doe</string>
     <string name="accuracy">Accuracy</string>
     <string name="friends">Friends</string>
     <string name="view_map">View Map</string>
     <string name="details">Details</string>
     <string name="maps_uri">geo:%1$f,%2$f?q=%1$f,%2$f(%3$s)</string>
+    <string name="last_updated_placeholder">Last Updated %1$s</string>
+    <string name="getting_your_location">Getting your location…</string>
+    <string name="address_not_found">An address could not be found</string>
 </resources>

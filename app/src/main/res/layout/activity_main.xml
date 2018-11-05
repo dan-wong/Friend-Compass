@@ -22,14 +22,16 @@
 
         <TextView
             android:id="@+id/nameTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
             android:fontFamily="sans-serif"
             android:text="@string/default_name"
             android:textColor="@android:color/white"
             android:textSize="36sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/lastUpdatedTextView"
+            app:layout_constraintEnd_toStartOf="@+id/accuracyImageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
@@ -85,7 +87,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="16dp"
         android:background="@android:color/white"
         android:elevation="5dp"
         android:orientation="vertical"
@@ -104,7 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:fontFamily="sans-serif"
-            android:text="@string/location_placeholder"
+            android:text="@string/getting_your_location"
             android:textColor="@color/primary_text"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -116,7 +118,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
-            android:text="@string/distance_placeholder"
             android:textColor="@color/secondary_text"
             android:textSize="14sp" />
 

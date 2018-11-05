@@ -3,7 +3,7 @@ package com.daniel.friendcompass.util;
 import android.hardware.GeomagneticField;
 import android.location.Location;
 
-public class Util {
+public class BearingUtil {
     public static double getRelativeBearing(Location src, Location dest, double bearing) {
         return normalise(getBearingWithDeclination(src.bearingTo(dest), src) - bearing);
     }

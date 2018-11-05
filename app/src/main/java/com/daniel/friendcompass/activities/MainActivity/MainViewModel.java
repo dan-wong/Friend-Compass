@@ -6,7 +6,7 @@ import android.location.Location;
 
 import com.daniel.friendcompass.azimuth.AzimuthListener;
 import com.daniel.friendcompass.location.LocationListener;
-import com.daniel.friendcompass.util.Util;
+import com.daniel.friendcompass.util.BearingUtil;
 
 public class MainViewModel extends ViewModel implements AzimuthListener, LocationListener {
     private MutableLiveData<Double> azimuth;
@@ -30,14 +30,14 @@ public class MainViewModel extends ViewModel implements AzimuthListener, Locatio
 
     @Override
     public void bearingReceived(double azimuth) {
-        azimuth = Util.normalise(azimuth);
+        azimuth = BearingUtil.normalise(azimuth);
 
         if (location == null || location.getValue() == null) {
             this.azimuth.setValue(azimuth);
             return;
         }
 
-        azimuth = Util.getBearingWithDeclination(azimuth, location.getValue());
+        azimuth = BearingUtil.getBearingWithDeclination(azimuth, location.getValue());
         this.azimuth.setValue(azimuth);
     }
 
