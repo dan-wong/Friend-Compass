@@ -60,6 +60,5 @@ public class AzimuthSensor implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-        listener.sensorAccuracyChanged(i);
     }
 }

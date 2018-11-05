@@ -30,9 +30,9 @@ public class BearingUtil {
 
     public static String formatDistance(double distance) {
         if (distance >= 1000) {
-            return " | " + formatter.format(Math.round(distance / 1000)) + " km away";
+            return formatter.format(Math.round(distance / 1000)) + " km away";
         } else {
-            return " | " + Math.round(distance) + " m away";
+            return Math.round(distance) + " m away";
         }
     }
 

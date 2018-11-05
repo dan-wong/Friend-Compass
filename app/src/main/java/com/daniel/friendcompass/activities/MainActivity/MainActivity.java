@@ -5,8 +5,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -36,9 +33,7 @@ import com.daniel.friendcompass.util.BearingUtil;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,10 +49,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nameTextView) TextView nameTextView;
     @BindView(R.id.lastUpdatedTextView) TextView lastUpdatedTextView;
     @BindView(R.id.locationTextView) TextView locationTextView;
-    @BindView(R.id.subLocationTextView) TextView subLocationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
-    @BindView(R.id.accuracyImageView) ImageView accuracyImageView;
     @BindView(R.id.friendsBtn) Button friendsBtn;
     @BindView(R.id.mapBtn) Button mapbtn;
 
@@ -129,24 +122,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        final Observer<Integer> sensorAccuracyObserver = new Observer<Integer>() {
-            @Override
-            public void onChanged(@Nullable Integer accuracy) {
-                if (accuracy == null) return;
-                switch (accuracy) {
-                    case SensorManager.SENSOR_STATUS_ACCURACY_HIGH:
-                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_full));
-                        break;
-                    case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM:
-                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_medium));
-                        break;
-                    default:
-                        accuracyImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accuracy_low));
-                        break;
-                }
-            }
-        };
-
         final Observer<User> userObserver = new Observer<User>() {
             @Override
             public void onChanged(@Nullable User user) {
@@ -168,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.getAzimuth().observe(this, azimuthObserver);
         viewModel.getLocation().observe(this, locationObserver);
-        viewModel.getSensorAccuracy().observe(this, sensorAccuracyObserver);
         UserRepository.getInstance().getSelectedUser().observe(this, userObserver);
     }
 
@@ -217,16 +191,9 @@ public class MainActivity extends AppCompatActivity {
             if (resultData == null) return;
             String address = resultData.getString(Constants.RESULT_DATA_KEY);
             if (resultCode == Constants.SUCCESS_RESULT && address != null) {
-                List<String> addressFragments = Arrays.asList(address.split(","));
-
-                List<String> firstTwo = addressFragments.subList(0, 1);
-                List<String> remaining = addressFragments.subList(2, addressFragments.size());
-
-                locationTextView.setText(TextUtils.join(", ", firstTwo).trim());
-                subLocationTextView.setText(TextUtils.join(", ", remaining).trim());
+                locationTextView.setText(address);
             } else {
                 locationTextView.setText(R.string.address_not_found);
-                subLocationTextView.setText(String.format("%s, %s", currentUser.getLatitude(), currentUser.getLongitude()));
             }
         }
     }
