@@ -71,7 +71,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:padding="20dp"
         app:layout_constraintBottom_toTopOf="@+id/nameLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -89,48 +89,62 @@
         android:background="@android:color/white"
         android:elevation="5dp"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
-            android:id="@+id/azimuthTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Azimuth"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
             android:id="@+id/locationTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Location "
+            android:layout_marginTop="5dp"
+            android:fontFamily="sans-serif"
+            android:text="@string/location_placeholder"
+            android:textColor="@color/primary_text"
+            android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/azimuthTextView" />
-
-        <TextView
-            android:id="@+id/targetLocationTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Target Location" />
-
-        <TextView
-            android:id="@+id/bearingToTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Bearing" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/distanceTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Distance" />
+            android:fontFamily="sans-serif"
+            android:text="@string/distance_placeholder"
+            android:textColor="@color/secondary_text"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="25dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/mapBtn"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/view_map"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/friendsBtn"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/friends"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="14sp" />
+        </LinearLayout>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

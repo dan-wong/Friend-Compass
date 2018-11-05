@@ -2,8 +2,12 @@
     <string name="app_name">FriendCompass</string>
     <string name="azimuth_placeholder">Azimuth: %1$d</string>
     <string name="bearing_placeholder">Bearing To: %1$d</string>
-    <string name="location_placeholder">Location: %1$f, %2$f</string>
-    <string name="distance_placeholder">Distance: %1$f</string>
+    <string name="location_placeholder">%1$s</string>
+    <string name="distance_placeholder">Distance: %1$dm</string>
     <string name="default_name">Daniel Wong</string>
     <string name="accuracy">Accuracy</string>
+    <string name="friends">Friends</string>
+    <string name="view_map">View Map</string>
+    <string name="details">Details</string>
+    <string name="maps_uri">geo:%1$f,%2$f?q=%1$f,%2$f(%3$s)</string>
 </resources>
