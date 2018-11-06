@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,6 +51,9 @@ public class SignInActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         auth = FirebaseAuth.getInstance();
+
+        checkIfSignedIn();
+
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,6 +91,14 @@ public class SignInActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void checkIfSignedIn() {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) return;
+        Intent mainIntent = new Intent(SignInActivity.this, MainActivity.class);
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(mainIntent);
     }
 
     private void signInUser(String email, String password) {

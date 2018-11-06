@@ -17,15 +17,15 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".activities.SplashScreen"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:name=".activities.AuthenticationActivities.SignInActivity"
+            android:theme="@style/AppTheme.Launcher"
             tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".activities.MainActivity.MainActivity" />
         <activity
             android:name=".activities.UserActivity.UserActivity"
@@ -37,7 +37,6 @@
         <activity
             android:name=".activities.AuthenticationActivities.SignUpActivity"
             android:parentActivityName=".activities.AuthenticationActivities.SignInActivity" />
-        <activity android:name=".activities.AuthenticationActivities.SignInActivity" />
     </application>
 
 </manifest>
