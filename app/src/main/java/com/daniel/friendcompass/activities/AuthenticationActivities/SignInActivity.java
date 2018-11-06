@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.daniel.friendcompass.BaseApplication;
@@ -38,6 +39,8 @@ public class SignInActivity extends AppCompatActivity {
     Button signUpButton;
     @BindView(R.id.forgotPasswordBtn)
     Button forgotPasswordButton;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
 
     private FirebaseAuth auth;
 
@@ -63,13 +66,12 @@ public class SignInActivity extends AppCompatActivity {
                 } else if (!VerifyUtil.verifyEmail(email)) {
                     emailEditText.setError("Invalid email!");
                     return;
-                }
-
-                if (TextUtils.isEmpty(password)) {
+                } else if (TextUtils.isEmpty(password)) {
                     passwordEditText.setError("Password cannot be empty!");
                     return;
                 }
 
+                progressBar.setVisibility(View.VISIBLE);
                 signInUser(email, password);
             }
         });
@@ -78,6 +80,14 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        signUpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
                 startActivity(intent);
             }
         });
@@ -90,6 +100,7 @@ public class SignInActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "signInWithEmail:success");
+                            progressBar.setVisibility(View.INVISIBLE);
                             navigateToMainActivity();
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());

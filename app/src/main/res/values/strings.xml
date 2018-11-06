@@ -19,4 +19,7 @@
     <string name="sign_out">Sign Out</string>
     <string name="send_email">Send Email</string>
     <string name="password_reset_text">We just need the email you signed up with to send you your password reset instructions.</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="name">Name</string>
 </resources>

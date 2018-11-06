@@ -30,7 +30,12 @@
             android:parentActivityName=".activities.MainActivity.MainActivity"
             tools:ignore="InnerclassSeparator" />
         <activity android:name=".activities.MainActivity.MainActivity" />
-        <activity android:name=".activities.AuthenticationActivities.ForgotPasswordActivity" />
+        <activity
+            android:name=".activities.AuthenticationActivities.ForgotPasswordActivity"
+            android:parentActivityName=".activities.AuthenticationActivities.SignInActivity" />
+        <activity
+            android:name=".activities.AuthenticationActivities.SignUpActivity"
+            android:parentActivityName=".activities.AuthenticationActivities.SignInActivity" />
     </application>
 
 </manifest>

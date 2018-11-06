@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.daniel.friendcompass.BaseApplication;
@@ -30,6 +31,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     EditText emailEditText;
     @BindView(R.id.sendEmailButton)
     Button sendEmailButton;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
 
     private FirebaseAuth auth;
 
@@ -52,6 +55,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     return;
                 }
 
+                progressBar.setVisibility(View.VISIBLE);
                 sendPasswordResetEmail(email);
             }
         });
@@ -63,6 +67,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
+                            progressBar.setVisibility(View.INVISIBLE);
                             showSuccessDialog();
                         } else {
                             Toasty.error(BaseApplication.getInstance(), "An error occurred. Please try again", Toast.LENGTH_SHORT).show();
