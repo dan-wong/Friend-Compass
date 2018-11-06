@@ -52,16 +52,15 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.locationTextView) TextView locationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
-    @BindView(R.id.friendsBtn) Button friendsBtn;
-    @BindView(R.id.mapBtn) Button mapbtn;
+    @BindView(R.id.friendsBtn)
+    Button friendsButton;
+    @BindView(R.id.mapBtn)
+    Button mapButton;
 
     private LocationService locationService;
-    private Location location;
     private Location targetLocation;
 
     private AzimuthRollingAverage rollingAverage = new AzimuthRollingAverage();
-    private User currentUser;
-
     private MainViewModel viewModel;
 
     @Override
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         //Setup Azimuth Sensor
         new AzimuthSensor(this, viewModel);
 
-        friendsBtn.setOnClickListener(new View.OnClickListener() {
+        friendsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), UserActivity.class);
@@ -85,14 +84,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mapbtn.setOnClickListener(new View.OnClickListener() {
+        mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (targetLocation == null) return;
+                User user = UserRepository.getInstance().getSelectedUser().getValue();
+                if (targetLocation == null || user == null) return;
+
                 Uri gmmIntentUri = Uri.parse(getString(R.string.maps_uri,
                         targetLocation.getLatitude(),
                         targetLocation.getLongitude(),
-                        currentUser.getName()));
+                        user.getName()));
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
 
@@ -103,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
         final Observer<Double> azimuthObserver = new Observer<Double>() {
             @Override
             public void onChanged(@Nullable Double azimuth) {
-                if (azimuth == null || location == null) return;
+                if (azimuth == null || viewModel.getLocation().getValue() == null) return;
+
+                Location location = viewModel.getLocation().getValue();
                 double relativeBearing = BearingUtil.getRelativeBearing(location, targetLocation, azimuth);
                 relativeBearing = BearingUtil.normalise(rollingAverage.getAverageBearing(relativeBearing));
 
@@ -116,9 +119,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Location newLocation) {
                 if (newLocation == null) return;
-                location = newLocation;
                 distanceTextView.setText(BearingUtil.formatDistance(
-                        BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation)
+                        BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation)
                 ));
             }
         };
@@ -127,20 +129,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable User user) {
                 if (user == null) return;
-                currentUser = user;
 
                 nameTextView.setText(user.getName());
                 lastUpdatedTextView.setText(getString(R.string.last_updated_placeholder, new PrettyTime().format(new Date(user.getTimestamp()))));
                 targetLocation = createLocation(user.getLatitude(), user.getLongitude());
 
                 String address = reverseGeocode(targetLocation);
-                if (address.isEmpty()) {
-                    locationTextView.setText(String.format("%s, %s", targetLocation.getLatitude(), targetLocation.getLongitude()));
-                } else {
-                    locationTextView.setText(address);
-                }
+                if (address.isEmpty())
+                    address = String.format("%s, %s", targetLocation.getLatitude(), targetLocation.getLongitude());
+                locationTextView.setText(address);
 
-                if (location != null) {
+                if (viewModel.getLocation().getValue() != null) {
+                    Location location = viewModel.getLocation().getValue();
                     distanceTextView.setText(BearingUtil.formatDistance(
                             BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation)
                     ));
