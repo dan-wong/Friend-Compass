@@ -5,23 +5,21 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.daniel.friendcompass.Constants;
-import com.daniel.friendcompass.FetchAddressIntentService;
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.UserActivity.UserActivity;
 import com.daniel.friendcompass.azimuth.AzimuthRollingAverage;
@@ -33,7 +31,10 @@ import com.daniel.friendcompass.util.BearingUtil;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -132,7 +133,13 @@ public class MainActivity extends AppCompatActivity {
                 lastUpdatedTextView.setText(getString(R.string.last_updated_placeholder, new PrettyTime().format(new Date(user.getTimestamp()))));
                 targetLocation = createLocation(user.getLatitude(), user.getLongitude());
 
-                getLocationAddress(targetLocation, new AddressResultReceiver(new Handler(Looper.getMainLooper())));
+                String address = reverseGeocode(targetLocation);
+                if (address.isEmpty()) {
+                    locationTextView.setText(String.format("%s, %s", targetLocation.getLatitude(), targetLocation.getLongitude()));
+                } else {
+                    locationTextView.setText(address);
+                }
+
                 if (location != null) {
                     distanceTextView.setText(BearingUtil.formatDistance(
                             BearingUtil.distanceBetweenTwoCoordinates(location, targetLocation)
@@ -146,18 +153,22 @@ public class MainActivity extends AppCompatActivity {
         UserRepository.getInstance().getSelectedUser().observe(this, userObserver);
     }
 
-    private void getLocationAddress(Location location, ResultReceiver resultReceiver) {
-        Intent intent = new Intent(this, FetchAddressIntentService.class);
-        intent.putExtra(Constants.RECEIVER, resultReceiver);
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, location);
-        startService(intent);
-    }
-
     private Location createLocation(double latitude, double longitude) {
         Location location = new Location("");
         location.setLatitude(latitude);
         location.setLongitude(longitude);
         return location;
+    }
+
+    private String reverseGeocode(Location location) {
+        Geocoder myLocation = new Geocoder(getApplicationContext(), Locale.getDefault());
+        try {
+            List<Address> list = myLocation.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            return list.get(0).getAddressLine(0);
+        } catch (IOException e) {
+            Log.e(TAG, "Service not available. ", e);
+            return "";
+        }
     }
 
     @Override
@@ -175,27 +186,6 @@ public class MainActivity extends AppCompatActivity {
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void startLocationUpdates() {
         locationService = new LocationService(this, this.viewModel);
-    }
-
-    /**
-     * Inner classes
-     */
-
-    class AddressResultReceiver extends ResultReceiver {
-        AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            if (resultData == null) return;
-            String address = resultData.getString(Constants.RESULT_DATA_KEY);
-            if (resultCode == Constants.SUCCESS_RESULT && address != null) {
-                locationTextView.setText(address);
-            } else {
-                locationTextView.setText(R.string.address_not_found);
-            }
-        }
     }
 
     /**
