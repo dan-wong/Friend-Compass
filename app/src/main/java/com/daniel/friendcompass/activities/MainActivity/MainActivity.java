@@ -12,12 +12,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.daniel.friendcompass.R;
+import com.daniel.friendcompass.activities.AuthenticationActivities.SignInActivity;
 import com.daniel.friendcompass.activities.UserActivity.UserActivity;
 import com.daniel.friendcompass.azimuth.AzimuthRollingAverage;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
@@ -27,6 +31,7 @@ import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.BearingUtil;
 import com.daniel.friendcompass.util.GeocodeUtil;
 import com.daniel.friendcompass.util.LocationUtil;
+import com.google.firebase.auth.FirebaseAuth;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
@@ -147,6 +152,28 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getAzimuth().observe(this, azimuthObserver);
         viewModel.getLocation().observe(this, locationObserver);
         UserRepository.getInstance().getSelectedUser().observe(this, userObserver);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.sign_out:
+                FirebaseAuth.getInstance().signOut();
+
+                Intent mainIntent = new Intent(MainActivity.this, SignInActivity.class);
+                mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(mainIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

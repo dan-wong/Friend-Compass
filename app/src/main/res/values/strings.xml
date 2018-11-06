@@ -11,4 +11,12 @@
     <string name="last_updated_placeholder">Updated %1$s</string>
     <string name="getting_your_location">Getting your location…</string>
     <string name="no_location_found">No location found.</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="no_account_sign_up">No account? Sign up</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="send_email">Send Email</string>
+    <string name="password_reset_text">We just need the email you signed up with to send you your password reset instructions.</string>
 </resources>

@@ -28,11 +28,13 @@ public class UserRepository {
             System.currentTimeMillis()
     );
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseFirestore db;
     private MutableLiveData<List<User>> users;
     private MutableLiveData<User> selectedUser;
 
-    private UserRepository() { }
+    private UserRepository() {
+        db = FirebaseFirestore.getInstance();
+    }
 
     public static UserRepository getInstance() {
         if (instance == null) instance = new UserRepository();
