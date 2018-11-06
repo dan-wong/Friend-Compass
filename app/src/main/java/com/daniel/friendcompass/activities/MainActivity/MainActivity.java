@@ -5,8 +5,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,13 +25,12 @@ import com.daniel.friendcompass.location.LocationService;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.BearingUtil;
+import com.daniel.friendcompass.util.GeocodeUtil;
+import com.daniel.friendcompass.util.LocationUtil;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -74,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         MainActivityPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
 
         //Setup Azimuth Sensor
-        new AzimuthSensor(this, viewModel);
+        new AzimuthSensor(viewModel);
 
         friendsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
         final Observer<Double> azimuthObserver = new Observer<Double>() {
             @Override
             public void onChanged(@Nullable Double azimuth) {
-                if (azimuth == null || viewModel.getLocation().getValue() == null) return;
-
                 Location location = viewModel.getLocation().getValue();
+                if (azimuth == null || location == null || targetLocation == null) return;
+
                 double relativeBearing = BearingUtil.getRelativeBearing(location, targetLocation, azimuth);
                 relativeBearing = BearingUtil.normalise(rollingAverage.getAverageBearing(relativeBearing));
 
@@ -118,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         final Observer<Location> locationObserver = new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location newLocation) {
-                if (newLocation == null) return;
+                if (newLocation == null || targetLocation == null) return;
                 distanceTextView.setText(BearingUtil.formatDistance(
                         BearingUtil.distanceBetweenTwoCoordinates(newLocation, targetLocation)
                 ));
@@ -132,9 +128,9 @@ public class MainActivity extends AppCompatActivity {
 
                 nameTextView.setText(user.getName());
                 lastUpdatedTextView.setText(getString(R.string.last_updated_placeholder, new PrettyTime().format(new Date(user.getTimestamp()))));
-                targetLocation = createLocation(user.getLatitude(), user.getLongitude());
+                targetLocation = LocationUtil.createLocation(user.getLatitude(), user.getLongitude());
 
-                String address = reverseGeocode(targetLocation);
+                String address = GeocodeUtil.reverseGeocode(targetLocation);
                 if (address.isEmpty())
                     address = String.format("%s, %s", targetLocation.getLatitude(), targetLocation.getLongitude());
                 locationTextView.setText(address);
@@ -153,24 +149,6 @@ public class MainActivity extends AppCompatActivity {
         UserRepository.getInstance().getSelectedUser().observe(this, userObserver);
     }
 
-    private Location createLocation(double latitude, double longitude) {
-        Location location = new Location("");
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
-        return location;
-    }
-
-    private String reverseGeocode(Location location) {
-        Geocoder myLocation = new Geocoder(getApplicationContext(), Locale.getDefault());
-        try {
-            List<Address> list = myLocation.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            return list.get(0).getAddressLine(0);
-        } catch (IOException e) {
-            Log.e(TAG, "Service not available. ", e);
-            return "";
-        }
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -185,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void startLocationUpdates() {
-        locationService = new LocationService(this, this.viewModel);
+        locationService = new LocationService(this.viewModel);
     }
 
     /**

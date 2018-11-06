@@ -2,11 +2,15 @@ package com.daniel.friendcompass.models;
 
 import android.support.annotation.NonNull;
 
+import com.daniel.friendcompass.util.GeocodeUtil;
+import com.daniel.friendcompass.util.LocationUtil;
+
 public class User implements Comparable<User> {
     private final String name;
     private final double latitude;
     private final double longitude;
     private final long timestamp;
+    private final String address;
 
     public User(String name) {
         this(name, 0.0, 0.0, 0);
@@ -17,6 +21,9 @@ public class User implements Comparable<User> {
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
+
+        String address = GeocodeUtil.reverseGeocode(LocationUtil.createLocation(latitude, longitude));
+        this.address = address.isEmpty() ? String.format("%s, %s", latitude, longitude) : address;
     }
 
     public String getName() {
@@ -33,6 +40,10 @@ public class User implements Comparable<User> {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     @Override

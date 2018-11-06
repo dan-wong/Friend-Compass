@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 
+import com.daniel.friendcompass.BaseApplication;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -24,8 +25,8 @@ public class LocationService {
     private final Context context;
     private final LocationListener listener;
 
-    public LocationService(Context context, LocationListener listener) {
-        this.context = context;
+    public LocationService(LocationListener listener) {
+        this.context = BaseApplication.getInstance();
         this.listener = listener;
 
         checkLocationPermissionGranted();

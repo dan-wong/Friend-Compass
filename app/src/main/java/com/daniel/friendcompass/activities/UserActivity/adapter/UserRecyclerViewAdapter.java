@@ -37,6 +37,7 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         final User user = usersList.get(position);
         holder.nameTextView.setText(user.getName());
+        holder.locationTextView.setText(user.getAddress());
 
         if (user.getTimestamp() == 0) {
             holder.lastUpdatedTextView.setText(R.string.no_location_found);
@@ -63,12 +64,14 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
 
     public class UserViewHolder extends RecyclerView.ViewHolder {
         public TextView nameTextView;
+        public TextView locationTextView;
         public TextView lastUpdatedTextView;
         public CardView cardView;
 
-        public UserViewHolder(View itemView) {
+        UserViewHolder(View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
+            locationTextView = itemView.findViewById(R.id.locationTextView);
             lastUpdatedTextView = itemView.findViewById(R.id.lastUpdatedTextView);
             cardView = itemView.findViewById(R.id.cardView);
         }

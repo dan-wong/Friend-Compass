@@ -6,6 +6,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import com.daniel.friendcompass.BaseApplication;
+
 import static android.content.Context.SENSOR_SERVICE;
 
 public class AzimuthSensor implements SensorEventListener {
@@ -14,7 +16,9 @@ public class AzimuthSensor implements SensorEventListener {
     private float[] gData;
     private float[] mData;
 
-    public AzimuthSensor(Context context, AzimuthListener listener) {
+    public AzimuthSensor(AzimuthListener listener) {
+        Context context = BaseApplication.getInstance();
+
         SensorManager sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         Sensor gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         Sensor magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
