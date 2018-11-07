@@ -23,9 +23,16 @@ public class AzimuthSensor implements SensorEventListener {
         Sensor gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         Sensor magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-        sensorManager.registerListener(this,
-                gravitySensor,
-                SensorManager.SENSOR_DELAY_GAME);
+        if (gravitySensor == null) {
+            Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(this,
+                    accelerometer,
+                    SensorManager.SENSOR_DELAY_GAME);
+        } else {
+            sensorManager.registerListener(this,
+                    gravitySensor,
+                    SensorManager.SENSOR_DELAY_GAME);
+        }
 
         sensorManager.registerListener(this,
                 magneticSensor,
@@ -37,6 +44,7 @@ public class AzimuthSensor implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         switch(sensorEvent.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_GRAVITY:
                 gData = sensorEvent.values.clone();
                 break;

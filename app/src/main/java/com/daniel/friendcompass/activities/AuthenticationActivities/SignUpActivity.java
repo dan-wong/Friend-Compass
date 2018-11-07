@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.daniel.friendcompass.BaseApplication;
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.MainActivity.MainActivity;
+import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.VerifyUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -100,6 +101,7 @@ public class SignUpActivity extends AppCompatActivity {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toasty.error(BaseApplication.getInstance(), "Sign up failed. Please try again.", Toast.LENGTH_SHORT).show();
                         }
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                 });
     }
@@ -115,7 +117,7 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "User profile updated.");
+                            UserRepository.getInstance().createNewUser(auth.getCurrentUser());
                             progressBar.setVisibility(View.INVISIBLE);
                             showSuccessfulDialog();
                         }

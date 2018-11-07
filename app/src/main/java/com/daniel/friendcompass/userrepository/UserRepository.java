@@ -1,17 +1,22 @@
 package com.daniel.friendcompass.userrepository;
 
 import android.arch.lifecycle.MutableLiveData;
+import android.location.Location;
 import android.util.Log;
 
 import com.daniel.friendcompass.models.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +27,7 @@ public class UserRepository {
 
     private static UserRepository instance;
     private static final User defaultUser = new User(
+            "default",
             "Auckland",
             -36.844178,
             174.767738,
@@ -29,11 +35,13 @@ public class UserRepository {
     );
 
     private FirebaseFirestore db;
+    private FirebaseAuth auth;
     private MutableLiveData<List<User>> users;
     private MutableLiveData<User> selectedUser;
 
     private UserRepository() {
         db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
     }
 
     public static UserRepository getInstance() {
@@ -46,6 +54,7 @@ public class UserRepository {
 
         getUsers();
         db.collection("users")
+                .orderBy("name")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -56,6 +65,7 @@ public class UserRepository {
 
                         List<User> newUsers = new ArrayList<>();
                         for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                            if (document.getId().equals(auth.getCurrentUser().getUid())) continue;
                             Map<String, Object> data = document.getData();
 
                             if (data == null) continue;
@@ -63,6 +73,7 @@ public class UserRepository {
                             User user;
                             if (data.containsKey("latitude")) {
                                 user = new User(
+                                        document.getId(),
                                         String.valueOf(data.get("name")),
                                         (double) data.get("latitude"),
                                         (double) data.get("longitude"),
@@ -75,10 +86,13 @@ public class UserRepository {
                             }
                             newUsers.add(user);
                         }
-                        Collections.sort(newUsers);
                         users.setValue(newUsers);
                     }
                 });
+    }
+
+    public void resetUsersList() {
+        users = null;
     }
 
     public MutableLiveData<User> getSelectedUser() {
@@ -90,11 +104,50 @@ public class UserRepository {
     }
 
     public void setSelectedUser(User user) {
-        selectedUser.setValue(user);
+        db.collection("users").document(user.getUid())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) return;
+                        if (documentSnapshot != null && documentSnapshot.exists()) {
+                            Map<String, Object> data = documentSnapshot.getData();
+                            if (data == null) return;
+
+                            User user = new User(
+                                    documentSnapshot.getId(),
+                                    String.valueOf(data.get("name")),
+                                    (double) data.get("latitude"),
+                                    (double) data.get("longitude"),
+                                    (long) data.get("timestamp")
+                            );
+
+                            selectedUser.setValue(user);
+                        }
+                    }
+                });
     }
 
     public MutableLiveData<List<User>> getUsers() {
         if (users == null) users = new MutableLiveData<>();
         return users;
+    }
+
+    public void createNewUser(FirebaseUser user) {
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("name", user.getDisplayName());
+
+        db.collection("users")
+                .document(user.getUid())
+                .set(userData, SetOptions.merge());
+    }
+
+    public void updateUserLocation(Location location) {
+        DocumentReference docRef = db.collection("users")
+                .document(auth.getCurrentUser().getUid());
+        docRef.update(
+                "latitude", location.getLatitude(),
+                "longitude", location.getLongitude(),
+                "timestamp", location.getTime()
+        );
     }
 }

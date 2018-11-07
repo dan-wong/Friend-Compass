@@ -6,6 +6,7 @@ import android.location.Location;
 
 import com.daniel.friendcompass.azimuth.AzimuthListener;
 import com.daniel.friendcompass.location.LocationListener;
+import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.BearingUtil;
 
 public class MainViewModel extends ViewModel implements AzimuthListener, LocationListener {
@@ -36,7 +37,11 @@ public class MainViewModel extends ViewModel implements AzimuthListener, Locatio
     }
 
     @Override
-    public void locationReceived(Location location) {
-        this.location.setValue(location);
+    public void locationReceived(Location newLocation) {
+//        if (location.getValue() != null && LocationUtil.isSameLocation(location.getValue(), newLocation)) {
+//            UserRepository.getInstance().updateUserLocation(newLocation);
+//        }
+        UserRepository.getInstance().updateUserLocation(newLocation);
+        this.location.setValue(newLocation);
     }
 }

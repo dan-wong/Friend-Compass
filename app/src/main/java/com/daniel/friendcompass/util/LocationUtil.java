@@ -9,4 +9,9 @@ public class LocationUtil {
         location.setLongitude(longitude);
         return location;
     }
+
+    public static boolean isSameLocation(Location one, Location two) {
+        return one.getLatitude() == two.getLatitude() &&
+                one.getLongitude() == two.getLongitude();
+    }
 }

@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.daniel.friendcompass.BaseApplication;
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.MainActivity.MainActivity;
+import com.daniel.friendcompass.userrepository.UserRepository;
 import com.daniel.friendcompass.util.VerifyUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -108,12 +109,13 @@ public class SignInActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "signInWithEmail:success");
-                            progressBar.setVisibility(View.INVISIBLE);
+                            UserRepository.getInstance().resetUsersList();
                             navigateToMainActivity();
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toasty.error(BaseApplication.getInstance(), "Authentication failed.", Toast.LENGTH_SHORT).show();
                         }
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                 });
     }

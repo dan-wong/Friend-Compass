@@ -6,6 +6,7 @@ import com.daniel.friendcompass.util.GeocodeUtil;
 import com.daniel.friendcompass.util.LocationUtil;
 
 public class User implements Comparable<User> {
+    private final String uid;
     private final String name;
     private final double latitude;
     private final double longitude;
@@ -13,10 +14,11 @@ public class User implements Comparable<User> {
     private final String address;
 
     public User(String name) {
-        this(name, 0.0, 0.0, 0);
+        this("default", name, 0.0, 0.0, 0);
     }
 
-    public User(String name, double latitude, double longitude, long timestamp) {
+    public User(String uid, String name, double latitude, double longitude, long timestamp) {
+        this.uid = uid;
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -24,6 +26,10 @@ public class User implements Comparable<User> {
 
         String address = GeocodeUtil.reverseGeocode(LocationUtil.createLocation(latitude, longitude));
         this.address = address.isEmpty() ? String.format("%s, %s", latitude, longitude) : address;
+    }
+
+    public String getUid() {
+        return uid;
     }
 
     public String getName() {
