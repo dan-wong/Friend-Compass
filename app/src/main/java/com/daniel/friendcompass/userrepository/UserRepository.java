@@ -135,6 +135,7 @@ public class UserRepository {
     public void createNewUser(FirebaseUser user) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", user.getDisplayName());
+        userData.put("email", user.getEmail());
 
         db.collection("users")
                 .document(user.getUid())

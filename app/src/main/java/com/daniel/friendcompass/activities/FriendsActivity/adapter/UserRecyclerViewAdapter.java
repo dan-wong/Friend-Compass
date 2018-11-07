@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.activities.UserActivity.adapter;
+package com.daniel.friendcompass.activities.FriendsActivity.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;

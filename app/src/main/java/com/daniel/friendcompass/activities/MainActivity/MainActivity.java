@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.AuthenticationActivities.SignInActivity;
-import com.daniel.friendcompass.activities.UserActivity.UserActivity;
+import com.daniel.friendcompass.activities.FriendsActivity.FriendsActivity;
 import com.daniel.friendcompass.azimuth.AzimuthRollingAverage;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationService;
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         friendsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), UserActivity.class);
+                Intent intent = new Intent(getApplicationContext(), FriendsActivity.class);
                 startActivity(intent);
             }
         });

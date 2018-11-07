@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.activities.UserActivity;
+package com.daniel.friendcompass.activities.FriendsActivity;
 
 import android.arch.lifecycle.Observer;
 import android.content.DialogInterface;
@@ -8,11 +8,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.daniel.friendcompass.R;
-import com.daniel.friendcompass.activities.UserActivity.adapter.UserRecyclerViewAdapter;
+import com.daniel.friendcompass.activities.FriendsActivity.adapter.UserRecyclerViewAdapter;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
 
@@ -21,7 +26,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserActivity extends AppCompatActivity implements UserRecyclerViewAdapter.UserActivityListener {
+public class FriendsActivity extends AppCompatActivity implements UserRecyclerViewAdapter.UserActivityListener {
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
     @BindView(R.id.progressBar) ProgressBar progressBar;
 
@@ -30,8 +35,12 @@ public class UserActivity extends AppCompatActivity implements UserRecyclerViewA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user);
+        setContentView(R.layout.activity_friends);
         ButterKnife.bind(this);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
 
@@ -48,6 +57,24 @@ public class UserActivity extends AppCompatActivity implements UserRecyclerViewA
         };
 
         UserRepository.getInstance().getUsers().observe(this, usersObserver);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.friends_activity, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add_friend:
+                Toast.makeText(this, "Pong", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private UserRecyclerViewAdapter getNewAdapter(List<User> users) {
