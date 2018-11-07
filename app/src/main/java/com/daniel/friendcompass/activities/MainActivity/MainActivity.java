@@ -23,11 +23,11 @@ import android.widget.TextView;
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.activities.AuthenticationActivities.SignInActivity;
 import com.daniel.friendcompass.activities.FriendsActivity.FriendsActivity;
-import com.daniel.friendcompass.azimuth.AzimuthRollingAverage;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationService;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
+import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.BearingUtil;
 import com.daniel.friendcompass.util.GeocodeUtil;
 import com.daniel.friendcompass.util.LocationUtil;
@@ -53,15 +53,13 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.locationTextView) TextView locationTextView;
     @BindView(R.id.distanceTextView) TextView distanceTextView;
     @BindView(R.id.compassImageView) ImageView compassImageView;
-    @BindView(R.id.friendsBtn)
-    Button friendsButton;
-    @BindView(R.id.mapBtn)
-    Button mapButton;
+    @BindView(R.id.friendsBtn) Button friendsButton;
+    @BindView(R.id.mapBtn) Button mapButton;
 
     private LocationService locationService;
     private Location targetLocation;
 
-    private AzimuthRollingAverage rollingAverage = new AzimuthRollingAverage();
+    private BearingRollingAverage rollingAverage = new BearingRollingAverage();
     private MainViewModel viewModel;
 
     @Override

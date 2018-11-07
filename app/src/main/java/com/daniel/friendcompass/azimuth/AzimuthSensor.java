@@ -11,6 +11,8 @@ import com.daniel.friendcompass.BaseApplication;
 import static android.content.Context.SENSOR_SERVICE;
 
 public class AzimuthSensor implements SensorEventListener {
+    private static final float ALPHA = 0.18f;
+
     private AzimuthListener listener;
 
     private float[] gData;
@@ -46,10 +48,10 @@ public class AzimuthSensor implements SensorEventListener {
         switch(sensorEvent.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
             case Sensor.TYPE_GRAVITY:
-                gData = sensorEvent.values.clone();
+                gData = lowPassFilter(sensorEvent.values.clone(), gData);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                mData = sensorEvent.values.clone();
+                mData = lowPassFilter(sensorEvent.values.clone(), mData);
                 break;
             default:
                 return;
@@ -71,6 +73,13 @@ public class AzimuthSensor implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
+    public void onAccuracyChanged(Sensor sensor, int i) {}
+
+    private float[] lowPassFilter(float[] input, float output[]) {
+        if (output == null) return input;
+        for (int i=0; i<input.length; i++) {
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
+        }
+        return output;
     }
 }

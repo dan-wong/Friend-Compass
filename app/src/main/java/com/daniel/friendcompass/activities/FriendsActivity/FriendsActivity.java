@@ -38,6 +38,8 @@ public class FriendsActivity extends AppCompatActivity implements UserRecyclerVi
         setContentView(R.layout.activity_friends);
         ButterKnife.bind(this);
 
+        setTitle("Friends");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
