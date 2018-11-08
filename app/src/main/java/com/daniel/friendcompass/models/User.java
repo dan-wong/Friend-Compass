@@ -13,8 +13,8 @@ public class User implements Comparable<User> {
     private final long timestamp;
     private final String address;
 
-    public User(String name) {
-        this("default", name, 0.0, 0.0, 0);
+    public User(String uid, String name) {
+        this(uid, name, 0.0, 0.0, 0);
     }
 
     public User(String uid, String name, double latitude, double longitude, long timestamp) {

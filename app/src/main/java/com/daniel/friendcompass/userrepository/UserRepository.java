@@ -4,6 +4,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.util.Log;
 
+import com.daniel.friendcompass.models.CurrentUser;
 import com.daniel.friendcompass.models.User;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,6 +19,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +41,10 @@ public class UserRepository {
 
     private FirebaseFirestore db;
     private FirebaseAuth auth;
+
+    private CurrentUser currentUser; //Currently authenticated user
     private MutableLiveData<List<User>> users;
+    private MutableLiveData<List<User>> fullUsersList;
     private MutableLiveData<User> selectedUser;
 
     private UserRepository() {
@@ -59,10 +64,11 @@ public class UserRepository {
 
     public void initialiseRequiredData() {
         if (users != null) return;
+        users = new MutableLiveData<>();
+        fullUsersList = new MutableLiveData<>();
 
-        getUsers();
         db.collection("users")
-                .orderBy("name")
+                .whereArrayContains("trusted_users", auth.getCurrentUser().getUid())
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -88,16 +94,69 @@ public class UserRepository {
                                         String.valueOf(data.get("name")),
                                         geoPoint.getLatitude(),
                                         geoPoint.getLongitude(),
-                                        timestamp.getSeconds()
+                                        timestamp.toDate().getTime()
                                 );
                             } else {
                                 user = new User(
+                                        document.getId(),
                                         String.valueOf(data.get("name"))
                                 );
                             }
                             newUsers.add(user);
                         }
+                        Collections.sort(newUsers);
                         users.setValue(newUsers);
+                    }
+                });
+
+        db.collection("users").document(auth.getCurrentUser().getUid())
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                        if (e != null || documentSnapshot == null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        Map<String, Object> data = documentSnapshot.getData();
+                        if (data == null) return;
+
+                        List<String> trustedUsers = new ArrayList<>();
+                        if (data.containsKey("trusted_users")) {
+                            trustedUsers = (List<String>) (data.get("trusted_users"));
+                        }
+
+                        currentUser = new CurrentUser(
+                                auth.getCurrentUser().getUid(),
+                                String.valueOf(data.get("name")),
+                                trustedUsers
+                        );
+                    }
+                });
+
+        db.collection("users")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if (e != null || queryDocumentSnapshots == null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        List<User> newUsers = new ArrayList<>();
+                        for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                            if (document.getId().equals(auth.getCurrentUser().getUid())) continue;
+                            Map<String, Object> data = document.getData();
+
+                            if (data == null) continue;
+                            User user = new User(
+                                    document.getId(),
+                                    String.valueOf(data.get("name"))
+                            );
+                            newUsers.add(user);
+                        }
+                        Collections.sort(newUsers);
+                        fullUsersList.setValue(newUsers);
                     }
                 });
     }
@@ -132,7 +191,7 @@ public class UserRepository {
                                     String.valueOf(data.get("name")),
                                     geoPoint.getLatitude(),
                                     geoPoint.getLongitude(),
-                                    timestamp.getSeconds()
+                                    timestamp.toDate().getTime()
                             );
 
                             selectedUser.setValue(user);
@@ -164,5 +223,22 @@ public class UserRepository {
                         "location", geoPoint,
                         "timestamp", new Timestamp(new Date(location.getTime())
                 ));
+    }
+
+    public CurrentUser getCurrentUser() {
+        return currentUser;
+    }
+
+    public void pushTrustedUserUpdates() {
+        db.collection("users")
+                .document(auth.getCurrentUser().getUid())
+                .update(
+                        "trusted_users", currentUser.getTrustedUsers()
+                );
+    }
+
+    public MutableLiveData<List<User>> getFullUsersList() {
+        if (fullUsersList == null) fullUsersList = new MutableLiveData<>();
+        return fullUsersList;
     }
 }

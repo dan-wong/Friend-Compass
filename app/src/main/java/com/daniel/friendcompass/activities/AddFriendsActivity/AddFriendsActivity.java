@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.daniel.friendcompass.R;
 import com.daniel.friendcompass.misc.DividerItemDecoration;
@@ -19,13 +21,14 @@ import butterknife.ButterKnife;
 
 public class AddFriendsActivity extends AppCompatActivity {
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
+    @BindView(R.id.progressBar) ProgressBar progressBar;
 
     private AddFriendsRecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_select_friends);
+        setContentView(R.layout.activity_add_friends);
         ButterKnife.bind(this);
 
         setTitle("Add Friends");
@@ -39,10 +42,17 @@ public class AddFriendsActivity extends AppCompatActivity {
             public void onChanged(@Nullable List<User> users) {
                 adapter = getNewAdapter(users);
                 recyclerView.setAdapter(adapter);
+                progressBar.setVisibility(View.INVISIBLE);
             }
         };
 
-        UserRepository.getInstance().getUsers().observe(this, usersObserver);
+        UserRepository.getInstance().getFullUsersList().observe(this, usersObserver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        UserRepository.getInstance().pushTrustedUserUpdates();
     }
 
     private AddFriendsRecyclerViewAdapter getNewAdapter(List<User> users) {
