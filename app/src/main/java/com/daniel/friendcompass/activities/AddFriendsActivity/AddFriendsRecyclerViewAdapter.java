@@ -15,6 +15,8 @@ import com.daniel.friendcompass.models.User;
 import java.util.List;
 
 public class AddFriendsRecyclerViewAdapter extends RecyclerView.Adapter<AddFriendsRecyclerViewAdapter.AddFriendsViewHolder> {
+    private static final String TAG = AddFriendsRecyclerViewAdapter.class.getSimpleName();
+
     public List<User> usersList;
 
     public AddFriendsRecyclerViewAdapter(List<User> usersList) {

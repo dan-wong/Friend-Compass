@@ -5,13 +5,14 @@ import android.location.Location;
 import android.util.Log;
 
 import com.daniel.friendcompass.models.User;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
@@ -43,6 +44,11 @@ public class UserRepository {
 
     private UserRepository() {
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+
         auth = FirebaseAuth.getInstance();
     }
 
@@ -75,14 +81,14 @@ public class UserRepository {
                             User user;
                             if (data.containsKey("location")) {
                                 GeoPoint geoPoint = (GeoPoint) data.get("location");
-                                Date date = (Date) data.get("timestamp");
+                                Timestamp timestamp = (Timestamp) data.get("timestamp");
 
                                 user = new User(
                                         document.getId(),
                                         String.valueOf(data.get("name")),
                                         geoPoint.getLatitude(),
                                         geoPoint.getLongitude(),
-                                        date.getTime()
+                                        timestamp.getSeconds()
                                 );
                             } else {
                                 user = new User(
@@ -119,14 +125,14 @@ public class UserRepository {
 
                             if (data == null) return;
                             GeoPoint geoPoint = (GeoPoint) data.get("location");
-                            Date date = (Date) data.get("timestamp");
+                            Timestamp timestamp = (Timestamp) data.get("timestamp");
 
                             User user = new User(
                                     documentSnapshot.getId(),
                                     String.valueOf(data.get("name")),
                                     geoPoint.getLatitude(),
                                     geoPoint.getLongitude(),
-                                    date.getTime()
+                                    timestamp.getSeconds()
                             );
 
                             selectedUser.setValue(user);
@@ -151,13 +157,12 @@ public class UserRepository {
     }
 
     public void updateUserLocation(Location location) {
-        DocumentReference docRef = db.collection("users")
-                .document(auth.getCurrentUser().getUid());
-
         GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-        docRef.update(
-                "location", geoPoint,
-                "timestamp", new Date(location.getTime())
-        );
+        db.collection("users")
+                .document(auth.getCurrentUser().getUid())
+                .update(
+                        "location", geoPoint,
+                        "timestamp", new Timestamp(new Date(location.getTime())
+                ));
     }
 }
