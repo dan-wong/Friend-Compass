@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.activities.FriendsActivity.adapter;
+package com.daniel.friendcompass.activities.FriendsActivity;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
@@ -16,11 +16,11 @@ import org.ocpsoft.prettytime.PrettyTime;
 import java.util.Date;
 import java.util.List;
 
-public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerViewAdapter.UserViewHolder> {
+public class FriendsRecyclerViewAdapter extends RecyclerView.Adapter<FriendsRecyclerViewAdapter.UserViewHolder> {
     private List<User> usersList;
     private UserActivityListener listener;
 
-    public UserRecyclerViewAdapter(List<User> usersList, UserActivityListener listener) {
+    public FriendsRecyclerViewAdapter(List<User> usersList, UserActivityListener listener) {
         this.usersList = usersList;
         this.listener = listener;
     }
@@ -37,12 +37,17 @@ public class UserRecyclerViewAdapter extends RecyclerView.Adapter<UserRecyclerVi
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         final User user = usersList.get(position);
         holder.nameTextView.setText(user.getName());
-        holder.locationTextView.setText(user.getAddress());
 
-        if (user.getTimestamp() == 0) {
-            holder.lastUpdatedTextView.setText(R.string.no_location_found);
+        if (user.getAddress().equals("0.0, 0.0")) {
+            holder.locationTextView.setText(R.string.no_location_found);
         } else {
+            holder.locationTextView.setText(user.getAddress());
+        }
+
+        if (user.getTimestamp() != 0) {
             holder.lastUpdatedTextView.setText(String.format("Last updated %s", new PrettyTime().format(new Date(user.getTimestamp()))));
+        } else {
+            holder.lastUpdatedTextView.setText("");
         }
 
         holder.cardView.setOnClickListener(new View.OnClickListener() {

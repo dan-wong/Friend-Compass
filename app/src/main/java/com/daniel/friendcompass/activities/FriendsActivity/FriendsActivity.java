@@ -2,6 +2,7 @@ package com.daniel.friendcompass.activities.FriendsActivity;
 
 import android.arch.lifecycle.Observer;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -14,10 +15,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.daniel.friendcompass.R;
-import com.daniel.friendcompass.activities.FriendsActivity.adapter.UserRecyclerViewAdapter;
+import com.daniel.friendcompass.activities.AddFriendsActivity.AddFriendsActivity;
+import com.daniel.friendcompass.misc.DividerItemDecoration;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
 
@@ -26,11 +27,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class FriendsActivity extends AppCompatActivity implements UserRecyclerViewAdapter.UserActivityListener {
+public class FriendsActivity extends AppCompatActivity implements FriendsRecyclerViewAdapter.UserActivityListener {
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
     @BindView(R.id.progressBar) ProgressBar progressBar;
 
-    private UserRecyclerViewAdapter adapter;
+    private FriendsRecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +46,6 @@ public class FriendsActivity extends AppCompatActivity implements UserRecyclerVi
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(getDrawable(R.drawable.drawable_divider)));
 
@@ -72,15 +72,16 @@ public class FriendsActivity extends AppCompatActivity implements UserRecyclerVi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_friend:
-                Toast.makeText(this, "Pong", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), AddFriendsActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private UserRecyclerViewAdapter getNewAdapter(List<User> users) {
-        return new UserRecyclerViewAdapter(users, this);
+    private FriendsRecyclerViewAdapter getNewAdapter(List<User> users) {
+        return new FriendsRecyclerViewAdapter(users, this);
     }
 
     @Override

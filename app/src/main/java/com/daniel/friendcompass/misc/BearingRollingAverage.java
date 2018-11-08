@@ -1,4 +1,4 @@
-package com.daniel.friendcompass.util;
+package com.daniel.friendcompass.misc;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

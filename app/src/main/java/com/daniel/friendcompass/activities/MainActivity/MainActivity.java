@@ -25,9 +25,9 @@ import com.daniel.friendcompass.activities.AuthenticationActivities.SignInActivi
 import com.daniel.friendcompass.activities.FriendsActivity.FriendsActivity;
 import com.daniel.friendcompass.azimuth.AzimuthSensor;
 import com.daniel.friendcompass.location.LocationService;
+import com.daniel.friendcompass.misc.BearingRollingAverage;
 import com.daniel.friendcompass.models.User;
 import com.daniel.friendcompass.userrepository.UserRepository;
-import com.daniel.friendcompass.util.BearingRollingAverage;
 import com.daniel.friendcompass.util.BearingUtil;
 import com.daniel.friendcompass.util.GeocodeUtil;
 import com.daniel.friendcompass.util.LocationUtil;

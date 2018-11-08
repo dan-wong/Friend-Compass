@@ -22,10 +22,10 @@
             tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.MainActivity.MainActivity"
             tools:ignore="InnerclassSeparator" />
@@ -41,6 +41,9 @@
         <activity
             android:name=".activities.AuthenticationActivities.SignUpActivity"
             android:parentActivityName=".activities.AuthenticationActivities.SignInActivity"
+            tools:ignore="InnerclassSeparator" />
+        <activity android:name=".activities.AddFriendsActivity.AddFriendsActivity"
+            android:parentActivityName=".activities.FriendsActivity.FriendsActivity"
             tools:ignore="InnerclassSeparator" />
     </application>
 
